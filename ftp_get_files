@@ -1,0 +1,54 @@
+# ！/usr/bin/python3
+# -*-coding:utf-8-*-
+#  Author Weigang QIU
+
+import ftplib
+import socket
+
+HOST = '10.61.33.888'  # enter your TAS IP
+USER = 'cfguser'
+PASSWD = '123456'
+
+def ftp_connect(host, username, passwd):
+    try:
+        ftp = ftplib.FTP(HOST)
+    except (socket.error, socket.gaierror) as e:
+        print('Error, cannot reach ' + HOST)
+        return
+    else:
+        print('Connect To Host Success...')
+    try:
+        ftp.login(USER, PASSWD)
+    except ftplib.error_perm:
+        print('Username or Passwd Error')
+        ftp.quit()
+        return
+    else:
+        print('Login Success...')
+    return ftp;
+
+def ftp_download(ftp, remotepath, localpath):
+    try:
+        ftp.retrbinary('RETR %s' % remotepath, open(localpath, 'wb').write)
+    except ftplib.error_perm:
+        print(f'File Error, file name: {localpath}')
+        # os.unlink(localpath)
+    except PermissionError:
+        print('PermissionError')
+        # os.unlink(localpath)
+    else:
+        print(f'Download Success...file name:{localpath}')
+    # ftp.quit()
+
+if __name__ == '__main__':
+    ftp = ftp_connect(HOST, USER, PASSWD)
+    # change work dirctory
+    ftp.cwd("/usr/log")
+    # get filenames as a list
+    file_name_list = ftp.nlst()
+    print(file_name_list)
+    # using for loop to download all file in file_name_list list
+    for every_file in file_name_list:
+        # ftp, remotepath filename, localpath and file name
+        ftp_download(ftp, every_file, every_file)
+    ftp.quit()
